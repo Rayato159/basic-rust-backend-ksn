@@ -1,0 +1,41 @@
+[package]
+name = "basic-rust-backend-ksn"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+resolver = "3"
+members = [
+    ".",
+    "migrations",
+]
+
+[dependencies]
+anyhow = "1.0.102"
+dotenvy = "0.15.7"
+rand = "0.10.1"
+mockall = "0.14.0"
+tracing = "0.1.44"
+tracing-subscriber = "0.3.23"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+chrono = { version = "0.4.44", features = ["serde"] }
+async-trait = "0.1.89"
+tokio = { version = "1", features = ["full"] }
+tokio-util = "0.7.18"
+tower-http = { version = "0.6.8", features = ["full"] }
+axum = "0.8.9"
+jsonwebtoken = { version = "10.3.0", default-features = false }
+tiberius = { version = "0.12.3", features = ["bigdecimal", "chrono", "sql-browser-tokio"]}
+vaultrs = { version = "0.8.0", default-features = false, features = [ "native-tls" ] }
+utoipa = { version = "5", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "9", features = ["axum"] }
+migrations = { path = "./migrations" }
+
+[[bin]]
+name = "server"
+path = "bin/server.rs"
+
+[[bin]]
+name = "migrator"
+path = "bin/migrator.rs"
