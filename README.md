@@ -52,5 +52,3 @@ JWT
   "secret": "super-secret-key-for-krungsri-2026"
 }
 ```
-
-podman exec -it vault-server vault operator unseal Vond7D5dVQvtyUEW9rGnoPe+UAZRa71cdVvVeAI8Uh0=
