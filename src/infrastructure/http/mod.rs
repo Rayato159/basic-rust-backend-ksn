@@ -67,7 +67,6 @@ pub async fn start(
     shared_jwt_secret: Arc<JWTSecret>,
 ) -> Result<()> {
     let app = Router::new()
-        .with_state(shared_jwt_secret.clone())
         .fallback(not_found)
         .route("/health-check", get(health_check))
         .nest(
