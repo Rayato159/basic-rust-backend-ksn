@@ -1,9 +1,16 @@
 pub mod routes;
 
 use crate::{
-    application::models::register::{RegisterModel, RegisterResult},
+    application::models::{
+        login::LoginModel,
+        register::{RegisterModel, RegisterResult},
+    },
     infrastructure::{
-        config::DotEnvyConfig, database::MSSQLClient, http::routes::register, secret::JWTSecret,
+        config::DotEnvyConfig,
+        database::MSSQLClient,
+        http::routes::{login, register},
+        jwt_auth::Passport,
+        secret::JWTSecret,
     },
 };
 use anyhow::Result;
@@ -28,11 +35,16 @@ use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(OpenApi)]
 #[openapi(
-    paths(crate::infrastructure::http::routes::register::register, health_check),
+    paths(
+        crate::infrastructure::http::routes::login::login,
+        crate::infrastructure::http::routes::register::register,
+        health_check
+    ),
     components(
-        schemas(RegisterModel, RegisterResult)
+        schemas(LoginModel, Passport, RegisterModel, RegisterResult)
     ),
     tags(
+        (name = "Login", description = "Login and get access token"),
         (name = "Register", description = "Register a new user")
     )
 )]
@@ -46,6 +58,10 @@ pub async fn start(
     let app = Router::new()
         .fallback(not_found)
         .route("/health-check", get(health_check))
+        .nest(
+            "/login",
+            login::routes(Arc::clone(&shared_db_conn), Arc::clone(&shared_jwt_secret)),
+        )
         .nest("/register", register::routes(Arc::clone(&shared_db_conn)))
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .layer(TimeoutLayer::with_status_code(
