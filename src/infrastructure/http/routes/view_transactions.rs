@@ -16,7 +16,7 @@ use crate::{
     },
     infrastructure::{
         database::{MSSQLClient, repositories::view_transactions::ViewTransactionsMSSQL},
-        http::middleware::UserId,
+        http::middleware::AuthCheck,
         secret::JWTSecret,
     },
 };
@@ -66,7 +66,7 @@ pub fn routes(db_pool: Arc<Mutex<MSSQLClient>>, jwt_secret: Arc<JWTSecret>) -> R
 )]
 pub async fn view_transactions(
     State(state): State<ViewTransactionsState>,
-    user_id: UserId,
+    user_id: AuthCheck,
     Path(path_user_id): Path<String>,
 ) -> impl IntoResponse {
     let path_user_id_uuid = match uuid::Uuid::parse_str(&path_user_id) {

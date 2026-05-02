@@ -12,9 +12,6 @@ use uuid::Uuid;
 
 use crate::infrastructure::{jwt_auth, secret::JWTSecret};
 
-#[derive(Debug, Clone)]
-pub struct UserId(pub Uuid);
-
 #[derive(Debug)]
 pub enum AuthError {
     MissingToken,
@@ -42,7 +39,10 @@ impl IntoResponse for AuthError {
     }
 }
 
-impl<S> FromRequestParts<S> for UserId
+#[derive(Debug, Clone)]
+pub struct AuthCheck(pub Uuid);
+
+impl<S> FromRequestParts<S> for AuthCheck
 where
     Arc<JWTSecret>: FromRef<S>,
     S: Send + Sync,
@@ -76,7 +76,7 @@ where
         // Parse user_id from sub claim
         let user_id = Uuid::parse_str(&claims.sub).map_err(|_| AuthError::InvalidToken)?;
 
-        Ok(UserId(user_id))
+        Ok(AuthCheck(user_id))
     }
 }
 

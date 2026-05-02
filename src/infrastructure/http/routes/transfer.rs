@@ -15,7 +15,7 @@ use crate::{
     },
     infrastructure::{
         database::{MSSQLClient, repositories::transfer::TransferMSSQL},
-        http::middleware::UserId,
+        http::middleware::AuthCheck,
         secret::JWTSecret,
     },
 };
@@ -60,7 +60,7 @@ pub fn routes(db_pool: Arc<Mutex<MSSQLClient>>, jwt_secret: Arc<JWTSecret>) -> R
 )]
 pub async fn create_transfer(
     State(state): State<TransferState>,
-    user_id: UserId, // UserId automatically extracted from JWT token!
+    user_id: AuthCheck,
     Json(transfer_model): Json<TransferModel>,
 ) -> impl IntoResponse {
     match state
