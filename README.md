@@ -1,24 +1,38 @@
+# Start Project In Dev Mode
+
+```
+cargo run --bin server
+```
+
+# Manaul Migration
+
+```
+cargo run --bin migration
+```
+
 # Testing
 
-Install test lib:
+**Install test lib:**
 
 ```bash
 cargo install cargo-tarpaulin
 ```
 
-Test command:
+**Test command:**
 
 ```bash
-cargo tarpaulin --out xml
+cargo tarpaulin --out html
 ```
 
-# Container build
+# Container (Podman)
+
+**Build:**
 
 ```bash
 podman build -t basic-rust-backend-ksn:v1.0.0 -f ./Dockerfile
 ```
 
-# Start on Podman
+**Start:**
 
 ```bash
 podman run --name basic-rust-backend-ksn -p 8080:8080 \
@@ -33,7 +47,10 @@ podman run --name basic-rust-backend-ksn -p 8080:8080 \
 
 # Vault Secret
 
-MSSQL
+**Token:** `myroot`
+
+**MSSQL:**
+
 ```json
 {
   "host": "127.0.0.1",
@@ -44,12 +61,18 @@ MSSQL
 }
 ```
 
-JWT
+**JWT:**
+
 ```json
 {
+  "expiration": "24h",
+  "issuer": "my-rust-app",
   "secret": "super-secret-key-for-krungsri-2026"
 }
 ```
 
 # API Docs
-`http://localhost:8080/swagger-ui`
+
+```text
+http://localhost:8080/swagger-ui
+```

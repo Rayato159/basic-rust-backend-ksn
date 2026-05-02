@@ -1,13 +1,15 @@
+use crate::domain::dto::register::RegisterDto;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
+use validator::Validate;
 
-use crate::domain::dto::register::RegisterDto;
-
-#[derive(Debug, Serialize, Deserialize, Clone, ToSchema)]
+#[derive(Debug, Validate, Serialize, Deserialize, Clone, ToSchema)]
 pub struct RegisterModel {
+    #[validate(length(min = 6))]
     #[schema(example = "ksn_user")]
     pub username: String,
+    #[validate(length(min = 6))]
     #[schema(example = "password1234")]
     pub password: String,
 }

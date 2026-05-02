@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use axum::{Json, Router, extract::State, http::StatusCode, response::IntoResponse, routing::post};
 use tokio::sync::Mutex;
+use validator::Validate;
 
 use crate::{
     application::{
@@ -26,7 +27,8 @@ pub fn routes(db_pool: Arc<Mutex<MSSQLClient>>) -> Router {
     request_body = RegisterModel,
     responses(
         (status = 201, description = "Create user success", body = RegisterResult),
-        (status = 500, description = "Error", body = String)
+        (status = 400, description = "Validation error", body = String, example = json!("username: length must be at least 6 characters")),
+        (status = 500, description = "Internal server error", body = String, example = json!("Database connection failed"))
     ),
     tag = "Register"
 )]
@@ -34,6 +36,10 @@ pub async fn register(
     State(register_use_case): State<Arc<RegisterUseCase<RegisterMSSQL>>>,
     Json(register_model): Json<RegisterModel>,
 ) -> impl IntoResponse {
+    if let Err(e) = register_model.validate() {
+        return (StatusCode::BAD_REQUEST, e.to_string()).into_response();
+    }
+
     match register_use_case.register(register_model).await {
         Ok(register_result) => (StatusCode::CREATED, Json(register_result)).into_response(),
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response(),
