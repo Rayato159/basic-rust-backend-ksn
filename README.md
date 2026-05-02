@@ -31,8 +31,6 @@ podman run --name basic-rust-backend-ksn -p 8080:8080 \
     -d basic-rust-backend-ksn:v1.0.0
 ```
 
-5K0o+MJoqi987y86CP7KVb5nuv0LBVR7L96WmF1lqjE=
-
 # Vault Secret
 
 MSSQL
@@ -52,3 +50,6 @@ JWT
   "secret": "super-secret-key-for-krungsri-2026"
 }
 ```
+
+# API Docs
+`http://localhost:8080/swagger-ui`

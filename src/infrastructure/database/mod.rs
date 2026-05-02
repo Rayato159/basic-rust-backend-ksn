@@ -1,3 +1,5 @@
+pub mod repositories;
+
 use anyhow::Result;
 use tiberius::{AuthMethod, Client, Config};
 use tokio::net::TcpStream;

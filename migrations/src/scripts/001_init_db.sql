@@ -3,10 +3,9 @@
 CREATE TABLE users (
     id UNIQUEIDENTIFIER PRIMARY KEY,
     username NVARCHAR(50) NOT NULL UNIQUE,
-    email NVARCHAR(100) NOT NULL UNIQUE,
-    password_hash NVARCHAR(255) NOT NULL,
-    created_at DATETIMEOFFSET NOT NULL,
-    updated_at DATETIMEOFFSET NULL
+    password NVARCHAR(255) NOT NULL,
+    created_at DATETIME2 NOT NULL,
+    updated_at DATETIME2 NULL
 );
 
 -- Create Transactions Table
@@ -16,8 +15,8 @@ CREATE TABLE transactions (
     amount DECIMAL(18, 2) NOT NULL,
     currency NVARCHAR(3) NOT NULL DEFAULT 'THB',
     status NVARCHAR(20) NOT NULL,
-    created_at DATETIMEOFFSET NOT NULL,
-    updated_at DATETIMEOFFSET NULL,
+    created_at DATETIME2 NOT NULL,
+    updated_at DATETIME2 NULL,
 
     -- สร้าง Relationship
     CONSTRAINT FK_transactions_users FOREIGN KEY (user_id)

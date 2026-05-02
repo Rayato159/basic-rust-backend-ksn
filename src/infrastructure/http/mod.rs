@@ -1,6 +1,11 @@
 pub mod routes;
 
-use crate::infrastructure::{config::DotEnvyConfig, database::MSSQLClient, secret::JWTSecret};
+use crate::{
+    application::models::register::{RegisterModel, RegisterResult},
+    infrastructure::{
+        config::DotEnvyConfig, database::MSSQLClient, http::routes::register, secret::JWTSecret,
+    },
+};
 use anyhow::Result;
 use axum::{
     Router,
@@ -8,12 +13,9 @@ use axum::{
     response::IntoResponse,
     routing::get,
 };
-use std::{
-    net::SocketAddr,
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::{net::SocketAddr, sync::Arc, time::Duration};
 use tokio::net::TcpListener;
+use tokio::sync::Mutex;
 use tower_http::{
     cors::{Any, CorsLayer},
     limit::RequestBodyLimitLayer,
@@ -25,7 +27,15 @@ use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(OpenApi)]
-#[openapi(paths(health_check), components())]
+#[openapi(
+    paths(crate::infrastructure::http::routes::register::register, health_check),
+    components(
+        schemas(RegisterModel, RegisterResult)
+    ),
+    tags(
+        (name = "Register", description = "Register a new user")
+    )
+)]
 struct ApiDoc;
 
 pub async fn start(
@@ -36,6 +46,7 @@ pub async fn start(
     let app = Router::new()
         .fallback(not_found)
         .route("/health-check", get(health_check))
+        .nest("/register", register::routes(Arc::clone(&shared_db_conn)))
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .layer(TimeoutLayer::with_status_code(
             StatusCode::REQUEST_TIMEOUT,

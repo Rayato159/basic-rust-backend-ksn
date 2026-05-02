@@ -4,7 +4,8 @@ use basic_rust_backend_ksn::infrastructure::{
     http::start,
     secret::{get_db_credentials, get_jwt_secret},
 };
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 use tracing::{error, info};
 
 #[tokio::main]
