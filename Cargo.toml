@@ -26,7 +26,7 @@ tokio-util = "0.7.18"
 tower-http = { version = "0.6.8", features = ["full"] }
 axum = "0.8.9"
 jsonwebtoken = { version = "10.3.0", features = ["rust_crypto"] }
-tiberius = { version = "0.12.3", features = ["bigdecimal", "chrono", "sql-browser-tokio"]}
+tiberius = { version = "0.12.3", features = ["bigdecimal", "chrono", "rust_decimal", "sql-browser-tokio"]}
 vaultrs = { version = "0.8.0", default-features = false, features = [ "native-tls" ] }
 utoipa = { version = "5", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "9", features = ["axum"] }

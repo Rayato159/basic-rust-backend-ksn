@@ -1,14 +1,20 @@
+pub mod middleware;
 pub mod routes;
 
 use crate::{
     application::models::{
         login::LoginModel,
         register::{RegisterModel, RegisterResult},
+        transfer::{TransferModel, TransferResult},
+        view_transactions::TransactionInfo,
     },
     infrastructure::{
         config::DotEnvyConfig,
         database::MSSQLClient,
-        http::routes::{login, register},
+        http::{
+            middleware::SecurityAddon,
+            routes::{login, register, transfer, view_transactions},
+        },
         jwt_auth::Passport,
         secret::JWTSecret,
     },
@@ -38,14 +44,19 @@ use utoipa_swagger_ui::SwaggerUi;
     paths(
         crate::infrastructure::http::routes::login::login,
         crate::infrastructure::http::routes::register::register,
+        crate::infrastructure::http::routes::transfer::create_transfer,
+        crate::infrastructure::http::routes::view_transactions::view_transactions,
         health_check
     ),
+    modifiers(&SecurityAddon),
     components(
-        schemas(LoginModel, Passport, RegisterModel, RegisterResult)
+        schemas(LoginModel, Passport, RegisterModel, RegisterResult, TransferModel, TransferResult, TransactionInfo)
     ),
     tags(
         (name = "Login", description = "Login and get access token"),
-        (name = "Register", description = "Register a new user")
+        (name = "Register", description = "Register a new user"),
+        (name = "Transfer", description = "Create transfer transactions"),
+        (name = "ViewTransactions", description = "View all transactions for a user")
     )
 )]
 struct ApiDoc;
@@ -56,6 +67,7 @@ pub async fn start(
     shared_jwt_secret: Arc<JWTSecret>,
 ) -> Result<()> {
     let app = Router::new()
+        .with_state(shared_jwt_secret.clone())
         .fallback(not_found)
         .route("/health-check", get(health_check))
         .nest(
@@ -63,6 +75,14 @@ pub async fn start(
             login::routes(Arc::clone(&shared_db_conn), Arc::clone(&shared_jwt_secret)),
         )
         .nest("/register", register::routes(Arc::clone(&shared_db_conn)))
+        .nest(
+            "/transfer",
+            transfer::routes(Arc::clone(&shared_db_conn), Arc::clone(&shared_jwt_secret)),
+        )
+        .nest(
+            "/transactions",
+            view_transactions::routes(Arc::clone(&shared_db_conn), Arc::clone(&shared_jwt_secret)),
+        )
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .layer(TimeoutLayer::with_status_code(
             StatusCode::REQUEST_TIMEOUT,

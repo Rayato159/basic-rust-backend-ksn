@@ -2664,6 +2664,7 @@ dependencies = [
  "once_cell",
  "pin-project-lite",
  "pretty-hex",
+ "rust_decimal",
  "thiserror 1.0.69",
  "tokio",
  "tokio-util",
