@@ -36,12 +36,12 @@ podman build -t basic-rust-backend-ksn:v1.0.0 -f ./Dockerfile
 
 ```bash
 podman run --name basic-rust-backend-ksn -p 8080:8080 \
-    -e STAGE=Local \
+    -e STAGE="Dev" \
     -e SERVER_PORT=8080 \
     -e SERVER_BODY_LIMIT=10 \
     -e SERVER_TIMEOUT=90 \
-    -e DATABASE_URL=postgres://postgres:YUPtqb49xKzdKpe@34.143.235.1:5432/quests_tracker_db \
-    -e JWT_SECRET=67 \
+    -e VAULT_ADDRESS="http://localhost:8200" \
+    -e VAULT_TOKEN="myroot" \
     -d basic-rust-backend-ksn:v1.0.0
 ```
 
