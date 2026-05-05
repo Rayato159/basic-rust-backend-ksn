@@ -46,6 +46,7 @@ use utoipa_swagger_ui::SwaggerUi;
         crate::infrastructure::http::routes::register::register,
         crate::infrastructure::http::routes::transfer::create_transfer,
         crate::infrastructure::http::routes::view_transactions::view_transactions,
+        crate::infrastructure::http::routes::view_transactions::view_transaction_by_id,
         health_check
     ),
     modifiers(&SecurityAddon),

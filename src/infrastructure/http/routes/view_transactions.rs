@@ -45,6 +45,7 @@ pub fn routes(db_pool: Arc<Mutex<MSSQLClient>>, jwt_secret: Arc<JWTSecret>) -> R
 
     Router::new()
         .route("/{user_id}", get(view_transactions))
+        .route("/by-id/{transaction_id}", get(view_transaction_by_id))
         .with_state(state)
 }
 
@@ -108,6 +109,89 @@ pub async fn view_transactions(
                 (StatusCode::FORBIDDEN, error_message).into_response()
             } else {
                 tracing::error!(error = %e, user_id = %user_id.0, "Failed to retrieve transactions");
+                (StatusCode::INTERNAL_SERVER_ERROR, error_message).into_response()
+            }
+        }
+    }
+}
+
+#[utoipa::path(
+        get,
+        path = "/transactions/by-id/{transaction_id}",
+        params(
+            ("transaction_id" = String, Path, description = "Transaction ID")
+        ),
+        responses(
+            (status = 200, description = "Transaction retrieved successfully", body = TransactionInfo),
+            (status = 400, description = "Invalid transaction_id format", body = String),
+            (status = 401, description = "Missing or invalid token", body = String),
+            (status = 403, description = "Access denied: user_id does not match transaction owner", body = String),
+            (status = 404, description = "Transaction not found", body = String),
+            (status = 500, description = "Internal server error", body = String)
+        ),
+        tag = "ViewTransactions",
+        security(("bearer_auth" = []))
+    )]
+pub async fn view_transaction_by_id(
+    State(state): State<ViewTransactionsState>,
+    user_id: AuthCheck,
+    Path(transaction_id): Path<String>,
+) -> impl IntoResponse {
+    let transaction_id_uuid = match uuid::Uuid::parse_str(&transaction_id) {
+        Ok(uuid) => uuid,
+        Err(e) => {
+            tracing::error!(error = %e, transaction_id_str = %transaction_id, "Invalid transaction_id format in path");
+            return (
+                StatusCode::BAD_REQUEST,
+                "Invalid transaction_id format".to_string(),
+            )
+                .into_response();
+        }
+    };
+
+    info!(
+        user_id = %user_id.0,
+        transaction_id = %transaction_id_uuid,
+        "Fetching transaction by ID"
+    );
+
+    match state
+        .view_transactions_use_case
+        .view_transaction_by_id(user_id.0, transaction_id_uuid)
+        .await
+    {
+        Ok(transaction_info) => {
+            tracing::info!(
+                user_id = %user_id.0,
+                transaction_id = %transaction_id_uuid,
+                "Successfully retrieved transaction by ID"
+            );
+            (StatusCode::OK, Json(transaction_info)).into_response()
+        }
+        Err(e) => {
+            let error_message = e.to_string();
+
+            if error_message.contains("not found") {
+                tracing::warn!(
+                    user_id = %user_id.0,
+                    transaction_id = %transaction_id_uuid,
+                    "Transaction not found"
+                );
+                (StatusCode::NOT_FOUND, error_message).into_response()
+            } else if error_message.contains("Access denied") {
+                tracing::warn!(
+                    user_id = %user_id.0,
+                    transaction_id = %transaction_id_uuid,
+                    "Access denied: user_id does not match transaction owner"
+                );
+                (StatusCode::FORBIDDEN, error_message).into_response()
+            } else {
+                tracing::error!(
+                    error = %e,
+                    user_id = %user_id.0,
+                    transaction_id = %transaction_id_uuid,
+                    "Failed to retrieve transaction by ID"
+                );
                 (StatusCode::INTERNAL_SERVER_ERROR, error_message).into_response()
             }
         }

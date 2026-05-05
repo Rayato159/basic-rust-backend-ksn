@@ -5,7 +5,7 @@ use tiberius::{Query, Row};
 use tokio::sync::Mutex;
 
 use crate::{
-    domain::dto::transfer::TransferDto,
+    domain::entities::transactions::Transaction,
     domain::repositories::view_transactions::ViewTransactionsRepository,
     infrastructure::database::MSSQLClient,
 };
@@ -22,7 +22,7 @@ impl ViewTransactionsMSSQL {
 
 #[async_trait]
 impl ViewTransactionsRepository for ViewTransactionsMSSQL {
-    async fn get_transactions_by_user_id(&self, user_id: uuid::Uuid) -> Result<Vec<TransferDto>> {
+    async fn get_transactions_by_user_id(&self, user_id: uuid::Uuid) -> Result<Vec<Transaction>> {
         let mut client = self.db_client.lock().await;
 
         let sql = "
@@ -49,17 +49,52 @@ impl ViewTransactionsRepository for ViewTransactionsMSSQL {
 
         for row_result in &rows {
             for row in row_result {
-                let transaction = self.row_to_transfer_dto(row)?;
+                let transaction = self.row_to_transaction(row)?;
                 transactions.push(transaction);
             }
         }
 
         Ok(transactions)
     }
+
+    async fn get_transaction_by_id(
+        &self,
+        transaction_id: uuid::Uuid,
+    ) -> Result<Option<Transaction>> {
+        let mut client = self.db_client.lock().await;
+
+        let sql = "
+            SELECT id, user_id, amount, currency, status, created_at, updated_at
+            FROM transactions
+            WHERE id = @p1
+        ";
+
+        let mut query = Query::new(sql);
+        query.bind(&transaction_id);
+
+        let stream = query
+            .query(&mut *client)
+            .await
+            .map_err(|e| anyhow::anyhow!("Failed to query transaction: {}", e))?;
+
+        let rows = stream
+            .into_results()
+            .await
+            .map_err(|e| anyhow::anyhow!("Failed to fetch transaction result: {}", e))?;
+
+        for row_result in &rows {
+            for row in row_result {
+                let transaction = self.row_to_transaction(row)?;
+                return Ok(Some(transaction));
+            }
+        }
+
+        Ok(None)
+    }
 }
 
 impl ViewTransactionsMSSQL {
-    fn row_to_transfer_dto(&self, row: &Row) -> Result<TransferDto> {
+    fn row_to_transaction(&self, row: &Row) -> Result<Transaction> {
         let id: uuid::Uuid = row
             .get::<uuid::Uuid, _>("id")
             .ok_or_else(|| anyhow::anyhow!("Missing id field"))?;
@@ -90,7 +125,7 @@ impl ViewTransactionsMSSQL {
         let updated_at: Option<chrono::NaiveDateTime> =
             row.get::<chrono::NaiveDateTime, _>("updated_at");
 
-        Ok(TransferDto {
+        Ok(Transaction {
             id,
             user_id,
             amount,

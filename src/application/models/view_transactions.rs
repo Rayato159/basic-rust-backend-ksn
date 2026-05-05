@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::domain::dto::transfer::TransferDto;
+use crate::domain::entities::transactions::Transaction;
 
 /// Result model for viewing all transactions of a user
 #[derive(Debug, Serialize, Deserialize, Clone, ToSchema)]
@@ -35,6 +36,19 @@ impl From<TransferDto> for TransactionInfo {
             status: dto.status,
             created_at: dto.created_at,
             updated_at: dto.updated_at,
+        }
+    }
+}
+
+impl From<Transaction> for TransactionInfo {
+    fn from(entity: Transaction) -> Self {
+        Self {
+            transaction_id: entity.id.to_string(),
+            amount: entity.amount,
+            currency: entity.currency,
+            status: entity.status,
+            created_at: entity.created_at,
+            updated_at: entity.updated_at,
         }
     }
 }
