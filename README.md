@@ -20,8 +20,14 @@ cargo install cargo-tarpaulin
 
 **Test command:**
 
+By project
 ```bash
 cargo tarpaulin --out html
+```
+
+By package
+```bash
+cargo tarpaulin --package <pakcage_name> --out html
 ```
 
 # Container (Podman)
