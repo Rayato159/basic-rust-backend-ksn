@@ -1,3 +1,11 @@
+# Tech Stacks
+- Axum
+- MSSQL + Terbirus
+- Vault
+- JWT
+- Argon2 Hashing
+- Mockall
+
 # Start Project In Dev Mode
 
 ```
