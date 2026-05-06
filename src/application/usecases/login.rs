@@ -33,14 +33,14 @@ where
         jwt_expiration: String,
     ) -> Result<Passport> {
         // Get user from repository
-        let login_dto = self
+        let user = self
             .login_repository
             .get_user(&login_model.username)
             .await?
             .ok_or_else(|| anyhow::anyhow!("Invalid username or password"))?;
 
         // Verify password
-        let is_valid = argon2_hashing::verify(login_model.password, login_dto.password)?;
+        let is_valid = argon2_hashing::verify(login_model.password, user.password)?;
 
         if !is_valid {
             return Err(anyhow::anyhow!("Invalid username or password"));
@@ -51,7 +51,7 @@ where
 
         // Generate JWT token
         let claims = Claims {
-            sub: login_dto.id.to_string(),
+            sub: user.id.to_string(),
             exp: (Utc::now() + Duration::hours(expiration_hours)).timestamp() as usize,
             iat: Utc::now().timestamp() as usize,
         };
