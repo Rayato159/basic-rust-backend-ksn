@@ -11,9 +11,15 @@ pub struct TransferModel {
     #[schema(value_type = f64, example = 1000.50)]
     pub amount: Decimal,
 
-    #[schema(example = "THB")]
     #[serde(default = "default_currency")]
+    #[schema(example = "THB")]
     pub currency: String,
+}
+
+impl TransferModel {
+    pub fn to_dto(&self, user_id: Uuid) -> TransferDto {
+        TransferDto::new(user_id, self.amount, self.currency.clone())
+    }
 }
 
 /// Default currency is THB
@@ -31,13 +37,6 @@ pub struct TransferResult {
     pub currency: String,
     pub status: String,
     pub message: String,
-}
-
-impl TransferModel {
-    /// Convert TransferModel to TransferDto for the specified user_id
-    pub fn to_dto(&self, user_id: Uuid) -> TransferDto {
-        TransferDto::new(user_id, self.amount, self.currency.clone())
-    }
 }
 
 impl From<TransferDto> for TransferResult {
