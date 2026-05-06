@@ -12,6 +12,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /usr/src/basic-rust-backend-ksn/target/release/basic-rust-backend-ksn /usr/local/bin/basic-rust-backend-ksn
+COPY --from=builder /usr/src/basic-rust-backend-ksn/target/release/server /usr/local/bin/basic-rust-backend-ksn
 
 CMD ["basic-rust-backend-ksn"]
