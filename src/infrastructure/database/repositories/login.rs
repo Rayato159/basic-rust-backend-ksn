@@ -58,14 +58,14 @@ impl LoginRepository for LoginMSSQL {
                     .ok_or_else(|| anyhow::anyhow!("Missing created_at field"))?;
                 let updated_at: Option<chrono::DateTime<chrono::Utc>> = row.get(4);
 
-                let login_dto = User {
+                let user = User {
                     id,
                     username: username.to_string(),
                     password: password.to_string(),
                     created_at,
                     updated_at,
                 };
-                Ok(Some(login_dto))
+                Ok(Some(user))
             }
             None => Ok(None),
         }
