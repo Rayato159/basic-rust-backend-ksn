@@ -90,3 +90,17 @@ podman run --name basic-rust-backend-ksn -p 8080:8080 \
 ```text
 http://localhost:8080/swagger-ui
 ```
+
+# SQL
+```sql
+CREATE DATABASE mydemodb;
+GO
+CREATE LOGIN myuser WITH PASSWORD = 'MyPassword123!', CHECK_POLICY = OFF;
+GO
+USE mydemodb;
+GO
+CREATE USER myuser FOR LOGIN myuser;
+GO
+ALTER ROLE db_owner ADD MEMBER myuser;
+GO
+```
